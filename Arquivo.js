@@ -1,105 +1,39 @@
-import wixData from 'wix-data';
-import { fetch } from 'wix-fetch'; // Importando o fetch correto
 import { ok, notFound, serverError } from 'wix-http-functions'; // Cominicata com API
-import { chaveToken } from 'backend/Segredos.js';
-import { emailCredencial } from 'backend/Segredos.js';
+// crie um arquivo "http-functions.js" saiba mais em --> https://www.wix.com/velo/reference/wix-http-functions/introduction
 
-//   https://www.pontooxigenado.online/_functions/pagseguro
+/* Expondo uma API
+ Define a função abaixo do webhook, pode usar outros tipos de prefixo_
+ use_, post_, get_ , e utros --> https://support.wix.com/en/article/velo-exposing-a-site-api-with-http-functions
+ */
+export function pref_nomeFUNÇÃO(request) {
 
-// temos 3 opções aqui post_. get_ e use_
-export async function use_pagseguro(request) {
-    try {
-        const token = await chaveToken();
-        const email = emailCredencial()
-        const body = await request.body.json();
+    // SEU WEBHOOK --> https://NOME_SITE/_functions/nomeFUNÇÃO_sem_prefixo
 
-        console.log('request*****************************',request)
-        console.log('body*****************************',body)
+    console.log('01 PRIMEIRO REQUESTE', request)
 
-        try {
-            if (request.body.notificationCode) {
-                const notificationCode = request.body.notificationCode;
-                const credenciais = `?email=${email}&token=${token}`;
-                //https://ws.pagseguro.uol.com.br/v3/transactions/notifications/{{codigo-notificacao}}?{{credenciais}} acho que para produção
-                const url_Notificar = `https://ws.sandbox.pagseguro.uol.com.br/v3/transactions/notifications/${notificationCode}${credenciais}`;
+    // a função usa o método "json()" do objeto "body" do request para obter o corpo da mensagem em formato JSON
+    request.body.json()
+        .then((body) => {
+        //Dentro dessa função de retorno de chamada, o código imprime o corpo da mensagem com algumas informações específicas
+            console.log('Corpo MSG: ', body)
+            console.log('ID: ', body.id)
+            console.log('NOME: ', body.cliente)
+            console.log('Minha MSG: ', body.texto)
 
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                };
-                const settings = {
-                    method: 'GET',
-                    headers
-                };
-                try {
-                    const fetchResponse = await fetch(url_Notificar, settings);
-                    const responseJson = await fetchResponse.json()
-                    .then(response => {
-                            if (response.ok) {
-                                return response.text();
-                            }
-                            throw new Error('Network response was not ok.');
-                        })
-                        .then(responseText => {
-                            console.log(responseText);
-                            return responseText;
-                        })
-                        .catch(error => {
-                            console.error('There was a problem with the fetch operation:', error);
-                        });
+            // Restante do código, pode colocar ate para enviar ao banco de dados
 
-                } catch (error) {
-                    console.log("error: " + error.toString());
-                    console.log(error.stack);
-                    return error;
-                }
-            } else {
-                const ID_PAGAMENTO = body.id;
-                const REFERENCIA_ID = body.reference_id;
-                const NOME = body.customer.name;
-                const CPF = body.customer.tax_id;
-                const VALOR = body.items[0].unit_amount;
-                const STATUS_PAGAMENTO = body.links[1].rel;
-
-                console.log('CONFIRMAÇÃO DE PAGAMENTO nome: ', NOME);
-                console.log('CONFIRMAÇÃO DE PAGAMENTO tax_id: ', CPF);
-                console.log('CONFIRMAÇÃO DE PAGAMENTO id DE Pagamento: ', ID_PAGAMENTO);
-                console.log('CONFIRMAÇÃO DE PAGAMENTO reference_id: ', REFERENCIA_ID);
-                console.log('CONFIRMAÇÃO DE PAGAMENTO foi pago: ', STATUS_PAGAMENTO);
-                console.log('CONFIRMAÇÃO DE PAGAMENTO valor: ', VALOR);
-
-                let toData = {
-                    "idUsuario": REFERENCIA_ID,
-                    "nome": NOME,
-                    "cpf": CPF,
-                    "Id Transacao": ID_PAGAMENTO,
-                    "depOuSac": 'Deposito',
-                    "status": STATUS_PAGAMENTO,
-                    "ValorDeposito": VALOR
-                };
-
-                const data = await wixData.insert("Bancas", toData);
-                console.log('TRANSAÇÃO SALVA EM BANCO DE DADOS Bancas: ', data);
-                console.log("🔩 *********************** id DE Pagamento para atualizar MEMBROS: ", ID_PAGAMENTO);
-
-                return { statusCode: 200 };
-            }
-        } catch (error) {
-            console.log('Erro ao fazer o parse do JSON:', error);
-            return serverError();
-        }
-    } catch (error) {
-        console.log(error);
-        return { statusCode: 500, body: error.toString() };
-    }
+        });
+    return ok();
 }
 
-export function use_github(request) {
-    console.log(request);
-    const body = request.body.json();
-    console.log(body);
-    console.log('Henrique Liandro da Silva');
-    return ok();
+// Essa que eu usei para conectar ao Github
 
-    //   https://www.pontooxigenado.online/_functions/github
+export function pref_nomeFUNÇÃO(request) {
+
+    // SEU WEBHOOK --> https://NOME_SITE/_functions/nomeFUNÇÃO_sem_prefixo
+
+    console.log('01 PRIMEIRO REQUESTE', request)
+
+        });
+    return ok();
 }
