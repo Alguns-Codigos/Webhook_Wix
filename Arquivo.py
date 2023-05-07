@@ -4,7 +4,7 @@ import json
 import requests
 
 # URL do webhook da plataforma Wix para onde a mensagem será enviada
-url = "https://alguns.wixsite.com/codigos/_functions/recebe"
+url = "https://Sua_uri_webhook"
 # Payload com os dados que serão enviados para o webhook
 data = {
     "id": "ex-00001",
